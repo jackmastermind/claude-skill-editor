@@ -65,8 +65,9 @@ You can create any kind of text file, subfolders, upload files, etc. See this An
 
 1. Click **"Package & Install"** or press `Ctrl+P`
 2. A draggable package zone appears in the bottom-right
-3. Drag the package directly into Claude Desktop to install
-4. Your skill is now available in Claude!
+3. In Claude Desktop, go to Settings → Capabilities → Skills
+4. Drag your package directly onto the Skills menu (no need to hit "Upload Skill")
+5. Your skill is now available in Claude! It will also transfer to your Claude on the web & app-store versions of Claude.
 
 ## Credits
 
