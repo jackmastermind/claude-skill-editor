@@ -34,6 +34,7 @@
     "productName": "Claude Skill Editor",
     "executableName": "claude-skill-editor",
     "afterPack": "build/afterPack.js",
+    "publish": null,
     "mac": {
       "icon": "icons/claude-skill-editor.icns",
       "target": ["dmg", "zip"],
