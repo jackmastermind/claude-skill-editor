@@ -1,0 +1,81 @@
+{
+  "name": "claude-skill-editor",
+  "version": "1.0.0",
+  "description": "Desktop editor for Claude Desktop Skills",
+  "homepage": "https://github.com/jackmastermind/claude-skill-editor",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:linux": "electron-builder --linux deb",
+    "build:icons": "node build/generate-icons.js",
+    "build:flatpak": "electron-builder --linux flatpak",
+    "build:win": "electron-builder --win nsis",
+    "build:mac": "electron-builder --mac dmg"
+  },
+  "keywords": ["claude", "skills", "MCP", "desktop"],
+  "author": "Jack Thompson",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jackmastermind/claude-skill-editor.git"
+  },
+  "devDependencies": {
+    "electron": "38.4.0",
+    "electron-builder": "24.13.3"
+  },
+  "dependencies": {
+    "archiver": "6.0.1",
+    "monaco-editor": "0.45.0",
+    "zod": "3.22.4"
+  },
+  "build": {
+    "appId": "com.claude.skill-editor",
+    "productName": "Claude Skill Editor",
+    "executableName": "claude-skill-editor",
+    "afterPack": "build/afterPack.js",
+    "mac": {
+      "icon": "icons/claude-skill-editor.icns",
+      "target": ["dmg", "zip"],
+      "category": "public.app-category.developer-tools"
+    },
+    "win": {
+      "icon": "icons/claude-skill-editor.ico",
+      "target": ["nsis"],
+      "artifactName": "${productName}-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": false
+    },
+    "linux": {
+      "target": ["deb"],
+      "category": "Development",
+      "icon": "icons",
+      "maintainer": "Jack Thompson <jackmastermind@protonmail.com>",
+      "desktop": {
+        "Name": "Claude Skill Editor",
+        "Icon": "claude-skill-editor",
+        "Terminal": "false"
+      }
+    },
+    "flatpak": {
+      "runtime": "org.freedesktop.Platform",
+      "runtimeVersion": "23.08",
+      "sdk": "org.freedesktop.Sdk",
+      "finishArgs": [
+        "--share=network",
+        "--socket=wayland",
+        "--socket=x11",
+        "--device=dri",
+        "--filesystem=home"
+      ]
+    },
+    "deb": {
+      "packageName": "claude-skill-editor",
+      "afterInstall": "build/linux-after-install.sh"
+    }
+  }
+}

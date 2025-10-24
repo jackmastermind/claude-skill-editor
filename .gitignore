@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.claude/
+*.log
+.DS_Store
+.vscode/
+*.zip
+
+CLAUDE.md
+AGENTS.md

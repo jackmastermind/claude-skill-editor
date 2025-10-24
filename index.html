@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude Skill Editor</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Lora:wght@400;500&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --dark: #141413;
+      --light: #faf9f5;
+      --mid-gray: #b0aea5;
+      --light-gray: #e8e6dc;
+      --orange: #d97757;
+      --blue: #6a9bcc;
+      --green: #788c5d;
+    }
+    
+    body {
+      font-family: 'Lora', Georgia, serif;
+      background-color: var(--dark);
+      color: var(--light);
+      overflow: hidden;
+      -webkit-app-region: drag;
+    }
+    
+    h1, h2, h3, h4, h5, h6, button {
+      font-family: 'Poppins', Arial, sans-serif;
+    }
+    
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      -webkit-app-region: no-drag;
+    }
+    
+    /* Title Bar */
+    .titlebar {
+      height: 40px;
+      background: var(--dark);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      border-bottom: 1px solid rgba(250, 249, 245, 0.1);
+      -webkit-app-region: drag;
+    }
+    
+    .titlebar h1 {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--light);
+    }
+    
+    /* Main Container */
+    .container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    
+    /* Sidebar */
+    .sidebar {
+      width: 280px;
+      background: rgba(250, 249, 245, 0.05);
+      border-right: 1px solid rgba(250, 249, 245, 0.1);
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+    }
+    
+    .sidebar-header {
+      margin-bottom: 16px;
+    }
+    
+    .sidebar-header h2 {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 12px;
+      color: var(--light);
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      -webkit-app-region: no-drag;
+    }
+    
+    .btn-primary {
+      background: var(--orange);
+      color: var(--light);
+    }
+    
+    .btn-primary:hover {
+      background: #e68765;
+      transform: translateY(-1px);
+    }
+    
+    .btn-secondary {
+      background: rgba(250, 249, 245, 0.1);
+      color: var(--light);
+      margin-top: 8px;
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(250, 249, 245, 0.15);
+    }
+    
+    /* Skills List */
+    .skills-list {
+      flex: 1;
+      overflow-y: auto;
+      margin-top: 16px;
+    }
+    
+    .skill-item {
+      padding: 12px;
+      margin-bottom: 8px;
+      background: rgba(250, 249, 245, 0.05);
+      border: 1px solid rgba(250, 249, 245, 0.1);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .skill-item:hover {
+      background: rgba(250, 249, 245, 0.1);
+      border-color: var(--orange);
+    }
+    
+    .skill-item.active {
+      background: rgba(217, 119, 87, 0.15);
+      border-color: var(--orange);
+    }
+    
+    .skill-name {
+      font-family: 'Poppins', Arial, sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--light);
+      margin-bottom: 4px;
+    }
+    
+    .skill-desc {
+      font-size: 12px;
+      color: var(--mid-gray);
+    }
+    
+    /* Editor Area */
+    .editor-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--dark);
+    }
+    
+    .editor-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: rgba(250, 249, 245, 0.05);
+      border-bottom: 1px solid rgba(250, 249, 245, 0.1);
+    }
+    
+    .editor-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--mid-gray);
+    }
+    
+    .editor-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 13px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      font-family: 'Poppins', Arial, sans-serif;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    
+    .btn-package {
+      background: var(--blue);
+      color: var(--light);
+    }
+    
+    .btn-package:hover {
+      background: #7baad8;
+    }
+
+    .btn-delete {
+      background: #c75c5c;
+      color: var(--light);
+    }
+
+    .btn-delete:hover {
+      background: #d76767;
+    }
+
+    .btn-delete:disabled {
+      background: #8a8a8a;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    
+    #editor {
+      flex: 1;
+      border: 1px solid rgba(250, 249, 245, 0.1);
+      margin: 16px;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    
+    /* Drag Zone */
+    .drag-zone {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 200px;
+      padding: 20px;
+      background: rgba(217, 119, 87, 0.2);
+      border: 2px dashed var(--orange);
+      border-radius: 8px;
+      text-align: center;
+      cursor: move;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    
+    .drag-zone.active {
+      display: flex;
+    }
+    
+    .drag-zone:hover {
+      background: rgba(217, 119, 87, 0.3);
+      transform: scale(1.05);
+    }
+    
+    .drag-icon {
+      font-size: 32px;
+    }
+    
+    .drag-text {
+      font-family: 'Poppins', Arial, sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--light);
+    }
+    
+    .drag-subtext {
+      font-size: 12px;
+      color: var(--mid-gray);
+    }
+    
+    /* Modal */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(20, 20, 19, 0.95);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    
+    .modal.active {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: var(--dark);
+      border: 1px solid rgba(250, 249, 245, 0.2);
+      border-radius: 8px;
+      padding: 24px;
+      width: 500px;
+      max-width: 90%;
+    }
+    
+    .modal-header {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: var(--light);
+    }
+
+    .modal-body-text {
+      font-size: 14px;
+      color: var(--mid-gray);
+      line-height: 1.5;
+    }
+    
+    .form-group {
+      margin-bottom: 16px;
+    }
+    
+    .form-label {
+      display: block;
+      font-family: 'Poppins', Arial, sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--mid-gray);
+      margin-bottom: 6px;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 10px 12px;
+      background: rgba(250, 249, 245, 0.05);
+      border: 1px solid rgba(250, 249, 245, 0.2);
+      border-radius: 4px;
+      color: var(--light);
+      font-family: 'Lora', Georgia, serif;
+      font-size: 14px;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: var(--orange);
+      background: rgba(250, 249, 245, 0.08);
+    }
+    
+    .form-textarea {
+      min-height: 100px;
+      resize: vertical;
+      font-family: 'Lora', Georgia, serif;
+    }
+    
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 24px;
+    }
+    
+    .btn-modal {
+      flex: 1;
+    }
+    
+    .btn-cancel {
+      background: rgba(250, 249, 245, 0.1);
+      color: var(--light);
+    }
+    
+    .btn-cancel:hover {
+      background: rgba(250, 249, 245, 0.15);
+    }
+    
+    /* Empty State */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--mid-gray);
+      text-align: center;
+      padding: 40px;
+    }
+    
+    .empty-state-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+    
+    .empty-state-text {
+      font-family: 'Poppins', Arial, sans-serif;
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+    
+    .empty-state-subtext {
+      font-size: 14px;
+      opacity: 0.7;
+    }
+    
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: rgba(250, 249, 245, 0.05);
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: rgba(250, 249, 245, 0.2);
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(250, 249, 245, 0.3);
+    }
+
+    /* Skill Details */
+    .skill-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      cursor: pointer;
+    }
+
+    .skill-header-text {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+    }
+
+    .skill-toggle {
+      display: inline-block;
+      font-size: 16px;
+      color: var(--mid-gray);
+      transition: transform 0.2s ease, color 0.2s ease;
+    }
+
+    .skill-item.expanded .skill-toggle {
+      transform: rotate(90deg);
+      color: var(--orange);
+    }
+
+    .skill-details {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 12px;
+      padding: 12px;
+      border: 1px solid rgba(250, 249, 245, 0.1);
+      border-radius: 6px;
+      background: rgba(250, 249, 245, 0.05);
+    }
+
+    .skill-item.expanded .skill-details {
+      display: flex;
+    }
+
+    .file-tree {
+      font-family: 'Poppins', Arial, sans-serif;
+    }
+
+    .skill-details .file-tree {
+      border: 1px solid rgba(250, 249, 245, 0.1);
+      border-radius: 6px;
+      background: rgba(250, 249, 245, 0.03);
+      padding: 6px 0;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .skill-details .file-tree-actions {
+      border-top: none;
+      padding-top: 0;
+    }
+
+    .file-tree-node {
+      padding: 6px 8px;
+      margin: 1px 0;
+      border-radius: 4px;
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--light);
+      transition: background-color 0.15s ease;
+    }
+
+    .file-tree-node:hover {
+      background: rgba(250, 249, 245, 0.08);
+    }
+
+    .file-tree-node.active {
+      background: rgba(217, 119, 87, 0.2);
+      color: var(--orange);
+      font-weight: 500;
+    }
+
+    .file-tree-node.folder {
+      font-weight: 500;
+    }
+
+    .file-tree-node.folder:hover {
+      background: rgba(250, 249, 245, 0.12);
+    }
+
+    .file-tree-node.folder.drag-over {
+      background: rgba(217, 119, 87, 0.3);
+      border-left: 3px solid var(--orange);
+      padding-left: 5px;
+    }
+
+    .file-tree-node.file.dragging {
+      opacity: 0.5;
+      background: rgba(250, 249, 245, 0.1);
+    }
+
+    .file-tree-node.file[draggable="true"] {
+      cursor: move;
+    }
+
+    .file-tree-toggle {
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 10px;
+    }
+
+    .file-tree-toggle.collapsed::before {
+      content: '▶';
+    }
+
+    .file-tree-toggle.expanded::before {
+      content: '▼';
+    }
+
+    .file-tree-icon {
+      width: 16px;
+      text-align: center;
+      font-size: 12px;
+    }
+
+    .file-tree-children {
+      margin-left: 16px;
+      overflow: hidden;
+      opacity: 1;
+      transform: scaleY(1);
+      transform-origin: top;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+    }
+
+    .file-tree-children.collapsed {
+      opacity: 0;
+      transform: scaleY(0);
+      height: 0;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+    }
+
+    .file-tree-actions {
+      display: flex;
+      gap: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(250, 249, 245, 0.1);
+    }
+
+    .btn-icon {
+      flex: 1;
+      padding: 8px 12px !important;
+      background: rgba(250, 249, 245, 0.1) !important;
+      color: var(--light) !important;
+      border: none !important;
+      border-radius: 4px !important;
+      cursor: pointer !important;
+      font-size: 13px !important;
+      transition: all 0.2s !important;
+    }
+
+    .btn-icon:hover {
+      background: rgba(250, 249, 245, 0.15) !important;
+    }
+
+    /* Editor Toolbar Updates */
+    .editor-title-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .file-info {
+      font-size: 12px;
+      color: var(--mid-gray);
+    }
+
+    /* File Not Editable Placeholder */
+    .file-not-editable {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--mid-gray);
+      text-align: center;
+      padding: 40px;
+      gap: 16px;
+    }
+
+    .placeholder-icon {
+      font-size: 48px;
+      opacity: 0.5;
+    }
+
+    .placeholder-text {
+      font-family: 'Poppins', Arial, sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .placeholder-info {
+      font-size: 13px;
+      opacity: 0.7;
+    }
+
+    /* Context Menu */
+    .context-menu {
+      position: fixed;
+      background: var(--dark);
+      border: 1px solid rgba(250, 249, 245, 0.2);
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      z-index: 1500;
+      min-width: 180px;
+      padding: 6px 0;
+    }
+
+    .context-menu-item {
+      padding: 10px 16px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+      font-size: 13px;
+      color: var(--light);
+    }
+
+    .context-menu-item:hover {
+      background: rgba(250, 249, 245, 0.1);
+    }
+
+    .context-menu-divider {
+      height: 1px;
+      background: rgba(250, 249, 245, 0.1);
+      margin: 4px 0;
+    }
+
+    /* Upload Drop Zone */
+    .upload-drop-zone {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(217, 119, 87, 0.1);
+      border: 3px dashed var(--orange);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .upload-drop-zone.active {
+      pointer-events: all;
+    }
+
+    .drop-zone-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .drop-icon {
+      font-size: 56px;
+    }
+
+    .drop-text {
+      font-family: 'Poppins', Arial, sans-serif;
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--light);
+    }
+
+    /* Unsaved changes indicator */
+    .unsaved-indicator {
+      color: var(--orange);
+      margin-left: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="titlebar">
+      <h1>Claude Skill Editor</h1>
+    </div>
+    
+    <div class="container">
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <h2>Skills</h2>
+          <button class="btn btn-primary" id="newSkillBtn">+ New Skill</button>
+          <button class="btn btn-secondary" id="openSkillBtn">Open Skill File</button>
+        </div>
+        <div class="skills-list" id="skillsList"></div>
+      </div>
+      
+      <div class="editor-area">
+        <div class="editor-toolbar">
+          <div class="editor-title-container">
+            <span class="editor-title" id="editorTitle">No skill loaded</span>
+            <span class="file-info" id="fileInfo"></span>
+          </div>
+          <div class="editor-actions">
+            <button class="btn-small btn-package" id="packageBtn" disabled>Package & Install</button>
+            <button class="btn-small btn-delete" id="deleteBtn" disabled>Delete Skill</button>
+          </div>
+        </div>
+        <div id="editor"></div>
+        <div id="fileNotEditablePlaceholder" class="file-not-editable" style="display: none;">
+          <div class="placeholder-icon">🚫</div>
+          <div class="placeholder-text">This file type is not editable in the editor</div>
+          <div class="placeholder-info" id="fileNotEditableInfo"></div>
+        </div>
+        <div class="empty-state" id="emptyState">
+          <div class="empty-state-icon">📝</div>
+          <div class="empty-state-text">No Skill Loaded</div>
+          <div class="empty-state-subtext">Create a new skill or open an existing one to start editing</div>
+        </div>
+      </div>
+
+      <!-- Drag & Drop Upload Zone -->
+      <div id="uploadDropZone" class="upload-drop-zone" style="display: none;">
+        <div class="drop-zone-content">
+          <div class="drop-icon">📥</div>
+          <div class="drop-text">Drop files or folders here</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="drag-zone" id="dragZone" draggable="true">
+      <div class="drag-icon">📦</div>
+      <div class="drag-text">Drag to Install</div>
+      <div class="drag-subtext">Drop into Claude Desktop</div>
+    </div>
+  </div>
+
+  <!-- Monaco Editor Loader -->
+  <script src="node_modules/monaco-editor/min/vs/loader.js"></script>
+
+  <!-- New Skill Modal -->
+  <div class="modal" id="newSkillModal">
+    <div class="modal-content">
+      <h2 class="modal-header">Create New Skill</h2>
+      <div class="form-group">
+        <label class="form-label">Skill Name</label>
+        <input type="text" class="form-input" id="skillNameInput" placeholder="my-awesome-skill">
+        <small style="display: block; margin-top: 6px; color: #b0aea5; font-size: 12px;">Lowercase letters, numbers, and hyphens only</small>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-input form-textarea" id="skillDescInput" placeholder="What does this skill do?"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-modal btn-cancel" id="cancelBtn">Cancel</button>
+        <button class="btn btn-modal btn-primary" id="createBtn">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Skill Confirmation Modal -->
+  <div class="modal" id="deleteConfirmModal">
+    <div class="modal-content">
+      <h2 class="modal-header">Delete Skill?</h2>
+      <p style="color: var(--light); margin-bottom: 16px;">Are you sure you want to delete <strong id="deleteSkillName"></strong>? This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button class="btn btn-modal btn-cancel" id="deleteCancelBtn">Cancel</button>
+        <button class="btn btn-modal btn-delete" id="deleteConfirmBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Context Menu -->
+  <div class="context-menu" id="contextMenu" style="display: none;">
+    <div class="context-menu-item" data-action="new-file">
+      <span>📄 New File</span>
+    </div>
+    <div class="context-menu-item" data-action="new-folder">
+      <span>📁 New Folder</span>
+    </div>
+    <div class="context-menu-divider"></div>
+    <div class="context-menu-item" data-action="upload-files">
+      <span>📤 Upload Files</span>
+    </div>
+    <div class="context-menu-item" data-action="upload-folder">
+      <span>📂 Upload Folder</span>
+    </div>
+    <div class="context-menu-divider"></div>
+    <div class="context-menu-item" data-action="rename">
+      <span>✏️ Rename</span>
+    </div>
+    <div class="context-menu-item" data-action="delete">
+      <span style="color: #c75c5c;">🗑️ Delete</span>
+    </div>
+  </div>
+
+  <!-- Create File/Folder Modal -->
+  <div class="modal" id="createItemModal">
+    <div class="modal-content">
+      <h2 class="modal-header" id="createItemTitle">Create New File</h2>
+      <div class="form-group">
+        <label class="form-label">Name</label>
+        <input type="text" class="form-input" id="itemNameInput" placeholder="example.md">
+        <small style="display: block; margin-top: 6px; color: #b0aea5; font-size: 12px;" id="itemNameHint">Include file extension (e.g., .md, .py)</small>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-modal btn-cancel" id="createItemCancelBtn">Cancel</button>
+        <button class="btn btn-modal btn-primary" id="createItemConfirmBtn">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete File/Folder Modal -->
+  <div class="modal" id="deleteItemModal">
+    <div class="modal-content">
+      <h2 class="modal-header" id="deleteItemTitle">Delete Item?</h2>
+      <p class="modal-body-text" id="deleteItemMessage"></p>
+      <div class="modal-actions">
+        <button class="btn btn-modal btn-cancel" id="deleteItemCancelBtn">Cancel</button>
+        <button class="btn btn-modal btn-delete" id="deleteItemConfirmBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rename Modal -->
+  <div class="modal" id="renameModal">
+    <div class="modal-content">
+      <h2 class="modal-header">Rename</h2>
+      <div class="form-group">
+        <label class="form-label">New Name</label>
+        <input type="text" class="form-input" id="renameInput">
+        <small style="display: block; margin-top: 6px; color: #b0aea5; font-size: 12px;">Rename will preserve the file extension</small>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-modal btn-cancel" id="renameCancelBtn">Cancel</button>
+        <button class="btn btn-modal btn-primary" id="renameConfirmBtn">Rename</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
