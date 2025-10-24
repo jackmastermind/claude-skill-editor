@@ -20,7 +20,7 @@ Introducing **Claude Skill Editor**. Create, edit, and upload skills with only a
 
 ### Prerequisites
 - Node.js 18+ and npm
-- Debian-based Linux system (Ubuntu, Debian, Linux Mint, etc.)
+- Mac, Windows, Debian-based linux
 
 ### Build from source
 
@@ -35,7 +35,7 @@ Introducing **Claude Skill Editor**. Create, edit, and upload skills with only a
    ```
 3. **Build:**
    ```bash
-   npm run build:linux # or :mac, :win, :flatpak
+   npm run build:linux # or :mac, :win
    ```
    The output file will be in the `dist` folder.
 
