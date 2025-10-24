@@ -4,8 +4,9 @@ A minimalist desktop application for creating, editing, and installing Claude sk
 
 ![Claude Skill Editor](https://img.shields.io/badge/Electron-v38-blue) ![License](https://img.shields.io/badge/license-MIT-green)
 
----
 
+![demo](https://github.com/user-attachments/assets/456f25e7-d39d-4637-ba74-3563ae20b4a8)
+---
 
 Claude Desktop/Web offers access to powerful [Claude Skills](https://www.anthropic.com/news/skills): modular prompts & scripts loaded for specific tasks.
 
