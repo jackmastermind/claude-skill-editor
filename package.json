@@ -1,6 +1,6 @@
 {
   "name": "claude-skill-editor",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Desktop editor for Claude Desktop Skills",
   "homepage": "https://github.com/jackmastermind/claude-skill-editor",
   "main": "main.js",
@@ -13,7 +13,12 @@
     "build:win": "electron-builder --win nsis",
     "build:mac": "electron-builder --mac dmg"
   },
-  "keywords": ["claude", "skills", "MCP", "desktop"],
+  "keywords": [
+    "claude",
+    "skills",
+    "MCP",
+    "desktop"
+  ],
   "author": "Jack Thompson",
   "license": "MIT",
   "repository": {
@@ -37,12 +42,17 @@
     "publish": null,
     "mac": {
       "icon": "icons/claude-skill-editor.icns",
-      "target": ["dmg", "zip"],
+      "target": [
+        "dmg",
+        "zip"
+      ],
       "category": "public.app-category.developer-tools"
     },
     "win": {
       "icon": "icons/claude-skill-editor.ico",
-      "target": ["nsis"],
+      "target": [
+        "nsis"
+      ],
       "artifactName": "${productName}-Setup-${version}.${ext}"
     },
     "nsis": {
@@ -52,7 +62,9 @@
       "deleteAppDataOnUninstall": false
     },
     "linux": {
-      "target": ["deb"],
+      "target": [
+        "deb"
+      ],
       "category": "Development",
       "icon": "icons",
       "maintainer": "Jack Thompson <jackmastermind@protonmail.com>",
