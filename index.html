@@ -162,6 +162,7 @@
     /* Editor Area */
     .editor-area {
       flex: 1;
+      min-width: 0; /* allow flex container to shrink when window narrows */
       display: flex;
       flex-direction: column;
       background: var(--dark);
@@ -180,11 +181,6 @@
       font-size: 14px;
       font-weight: 500;
       color: var(--mid-gray);
-    }
-    
-    .editor-actions {
-      display: flex;
-      gap: 8px;
     }
     
     .btn-small {
@@ -591,13 +587,29 @@
     /* Editor Toolbar Updates */
     .editor-title-container {
       display: flex;
-      align-items: center;
-      gap: 12px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .editor-title,
+    .file-info {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .file-info {
       font-size: 12px;
       color: var(--mid-gray);
+    }
+
+    .editor-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
     }
 
     /* File Not Editable Placeholder */

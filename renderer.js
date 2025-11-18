@@ -26,6 +26,7 @@ if (typeof require !== 'undefined' && typeof require.config === 'function') {
       minimap: { enabled: false },
       scrollBeyondLastLine: false,
       automaticLayout: true,
+      wordWrap: 'on',
       fontFamily: "'Lora', Georgia, serif",
       lineHeight: 24,
       suggest: { enabled: false },
