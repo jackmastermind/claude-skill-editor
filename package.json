@@ -69,9 +69,11 @@
       "icon": "icons",
       "maintainer": "Jack Thompson <jackmastermind@protonmail.com>",
       "desktop": {
-        "Name": "Claude Skill Editor",
-        "Icon": "claude-skill-editor",
-        "Terminal": "false"
+        "entry": {
+          "Name": "Claude Skill Editor",
+          "Icon": "claude-skill-editor",
+          "Terminal": "false"
+        }
       }
     },
     "flatpak": {
