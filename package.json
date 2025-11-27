@@ -26,8 +26,8 @@
     "url": "git+https://github.com/jackmastermind/claude-skill-editor.git"
   },
   "devDependencies": {
-    "electron": "38.4.0",
-    "electron-builder": "24.13.3"
+    "electron": "^39.0.0",
+    "electron-builder": "^26.0.0"
   },
   "dependencies": {
     "archiver": "6.0.1",

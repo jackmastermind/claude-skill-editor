@@ -149,9 +149,6 @@ const modalConfirmPairs = [
 ];
 
 // Test listener for input debugging
-let inputTestListener = null;
-let valueMonitorInterval = null;
-
 // Utility functions
 function normalizePath(pathString) {
   return typeof pathString === 'string' ? pathString.replace(/\\/g, '/') : pathString;
@@ -496,7 +493,6 @@ function toggleFolder(folderNode) {
 }
 
 async function loadFileFromTree(filePath) {
-  console.log('=== LOADING FILE FROM TREE ===', filePath);
   if (!currentSkill || !currentSkillDir) return;
 
   deactivateDragZone();
@@ -521,19 +517,14 @@ async function loadFileFromTree(filePath) {
 
       // Update editor based on editability
       if (result.metadata.editable) {
-        console.log('Loading editable file into Monaco');
         setEditorContent(result.content);
         editor.getModel().setLanguage(getLanguageMode(filePath));
         fileNotEditablePlaceholder.style.display = 'none';
         emptyState.style.display = 'none';
         document.getElementById('editor').style.display = 'flex';
-        console.log('Monaco editor display:', document.getElementById('editor').style.display);
-        console.log('Monaco editor is read-only:', editor.getModel().getOptions().readOnly);
         // Force focus on the Monaco editor
         setTimeout(() => {
           editor.focus();
-          console.log('Monaco focused, active element:', document.activeElement);
-          console.log('Monaco has focus:', editor.hasTextFocus());
         }, 50);
       } else {
         document.getElementById('editor').style.display = 'none';
@@ -597,9 +588,7 @@ function showContextMenu(x, y, type) {
 }
 
 function hideContextMenu() {
-  console.log('hideContextMenu called');
   contextMenu.style.display = 'none';
-  console.log('contextMenu display after hiding:', contextMenu.style.display);
   // Don't clear contextMenuTarget here - it's needed for modal operations
   // It will be cleared when the modal is closed or action is completed
 }
@@ -792,14 +781,21 @@ deleteConfirmBtn.addEventListener('click', async () => {
 
 // Native file drag functionality using Electron API
 dragZone.addEventListener('dragstart', (e) => {
-  if (zipPath) {
-    // Prevent default HTML5 drag behavior
+  if (!zipPath) {
     e.preventDefault();
-
-    // Initiate native file drag operation through Electron
-    // This must be called during the drag operation
-    window.electronAPI.startDrag(zipPath, currentSkill.name);
+    return;
   }
+
+  e.preventDefault();
+
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = 'copy';
+    e.dataTransfer.setData('text/plain', currentSkill ? currentSkill.name : 'skill-package');
+  }
+
+  // Initiate native file drag operation through Electron
+  // Browser's drag gesture continues while IPC message triggers native drag
+  window.electronAPI.startDrag(zipPath, currentSkill ? currentSkill.name : 'skill');
 });
 
 dragZone.addEventListener('dragend', (e) => {
@@ -1191,9 +1187,7 @@ contextMenu.addEventListener('click', async (e) => {
 
   // Hide context menu immediately for delete action (before confirm dialog)
   if (action === 'delete') {
-    console.log('Delete action - hiding context menu BEFORE confirm');
     hideContextMenu();
-    console.log('Context menu display after hide:', contextMenu.style.display);
   }
 
   switch (action) {
@@ -1307,20 +1301,6 @@ deleteItemConfirmBtn.addEventListener('click', async () => {
 
 // Create item modal
 function openCreateItemModal(type) {
-  console.log('=== OPENING CREATE ITEM MODAL ===', type);
-
-  // Remove any existing test listener FIRST
-  if (inputTestListener) {
-    itemNameInput.removeEventListener('keydown', inputTestListener);
-    console.log('Removed existing test listener');
-  }
-
-  // Clear any existing interval monitor
-  if (valueMonitorInterval) {
-    clearInterval(valueMonitorInterval);
-    console.log('Cleared existing value monitor');
-  }
-
   // Clear the input value
   itemNameInput.value = '';
 
@@ -1333,51 +1313,11 @@ function openCreateItemModal(type) {
   }
   createItemModal.setAttribute('data-create-type', type);
   createItemModal.classList.add('active');
-  console.log('Modal classList:', createItemModal.classList.toString());
-  console.log('Modal display:', window.getComputedStyle(createItemModal).display);
-  console.log('Input disabled:', itemNameInput.disabled);
-  console.log('Input readOnly:', itemNameInput.readOnly);
-
-  // Add temporary keydown listener to test if events reach the input
-  inputTestListener = (e) => {
-    console.log('INPUT KEYDOWN:', e.key, 'Input value:', itemNameInput.value, 'defaultPrevented:', e.defaultPrevented);
-  };
-  itemNameInput.addEventListener('keydown', inputTestListener);
-
-  // Also add input event listener to check if value changes
-  const inputEventListener = (e) => {
-    console.log('INPUT EVENT fired! New value:', itemNameInput.value);
-  };
-  itemNameInput.addEventListener('input', inputEventListener);
-
-  // Monitor if value is being reset programmatically
-  let lastValue = itemNameInput.value;
-  valueMonitorInterval = setInterval(() => {
-    if (itemNameInput.value !== lastValue) {
-      console.log('VALUE CHANGED PROGRAMMATICALLY from', lastValue, 'to', itemNameInput.value);
-      lastValue = itemNameInput.value;
-    }
-  }, 100);
-
-  console.log('Added new test listener');
-  console.log('itemNameInput element:', itemNameInput);
-  console.log('itemNameInput id:', itemNameInput.id);
-
-  // Check computed styles that might block input
-  const computedStyle = window.getComputedStyle(itemNameInput);
-  console.log('pointer-events:', computedStyle.pointerEvents);
-  console.log('user-select:', computedStyle.userSelect);
-  console.log('-webkit-user-modify:', computedStyle.webkitUserModify);
-  console.log('contenteditable:', itemNameInput.contentEditable);
 
   itemNameInput.focus();
-  console.log('Focused input, active element:', document.activeElement);
-  console.log('Active element is input:', document.activeElement === itemNameInput);
   // Force focus again after a delay in case it was blocked
   setTimeout(() => {
     itemNameInput.focus();
-    console.log('After timeout - active element:', document.activeElement);
-    console.log('After timeout - active element is input:', document.activeElement === itemNameInput);
   }, 100);
 }
 
@@ -1580,11 +1520,8 @@ async function performDeleteFileOrFolder(nodePath) {
       uploadDropZone.classList.remove('active');
       uploadDropZone.style.display = 'none';
       // Ensure context menu is hidden (should already be hidden by handler)
-      console.log('Before hideContextMenu in deletion success - display:', contextMenu.style.display);
       hideContextMenu();
-      console.log('After hideContextMenu in deletion success - display:', contextMenu.style.display);
       await loadFileTree();
-      console.log('After loadFileTree - context menu display:', contextMenu.style.display);
 
       contextMenuTarget = null;
     } else {
@@ -1752,8 +1689,6 @@ uploadDropZone.addEventListener('drop', async (e) => {
 
 // Keyboard shortcuts
 document.addEventListener('keydown', (e) => {
-  console.log('KEYDOWN EVENT:', e.key, 'Target:', e.target.tagName, e.target.id || e.target.className);
-
   if (
     e.key === 'Enter' &&
     !e.shiftKey &&

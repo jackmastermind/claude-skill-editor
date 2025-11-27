@@ -1,9 +1,23 @@
+// Workaround for Electron 38+ Wayland/X11 drag-and-drop crash
+// Must set env var BEFORE requiring electron for it to take effect
+if (process.platform === 'linux') {
+  process.env.ELECTRON_OZONE_PLATFORM_HINT = 'x11';
+  process.env.GDK_BACKEND = 'x11';
+}
+
 const { app, BrowserWindow, ipcMain, dialog, nativeImage } = require('electron');
 const path = require('path');
 const fs = require('fs').promises;
 const fsSync = require('fs');
 const archiver = require('archiver');
 const { z } = require('zod');
+
+// Additional GPU flags to prevent atom cache / SIGILL crashes on Linux
+if (process.platform === 'linux') {
+  app.disableHardwareAcceleration();
+  app.commandLine.appendSwitch('disable-gpu');
+  app.commandLine.appendSwitch('disable-gpu-compositing');
+}
 
 let mainWindow;
 const trackedTempFiles = new Set();
@@ -433,7 +447,8 @@ ipcMain.handle('create-zip', async (event, data) => {
       });
 
       archive.pipe(output);
-      archive.directory(skillDir, false);
+      // Include folder structure in ZIP so Claude Desktop recognizes it as a skill
+      archive.directory(skillDir, validated.skillName);
       archive.finalize();
     } catch (error) {
       console.error('Error creating ZIP:', error);
@@ -455,7 +470,9 @@ ipcMain.on('start-drag', (event, zipPath, skillName) => {
     // Resolve an icon for the drag payload
     const candidateIconPaths = [
       path.join(app.getAppPath(), 'icon.png'),
+      path.join(app.getAppPath(), 'build', 'icons', '64x64.png'),
       path.join(__dirname, 'icon.png'),
+      path.join(__dirname, 'build', 'icons', '64x64.png'),
       path.join(__dirname, 'node_modules/app-builder-lib/templates/icons/electron-linux/64x64.png')
     ];
 
@@ -484,6 +501,12 @@ ipcMain.on('start-drag', (event, zipPath, skillName) => {
       if (width > MAX_DRAG_ICON_DIM || height > MAX_DRAG_ICON_DIM) {
         dragIcon = dragIcon.resize({ width: MAX_DRAG_ICON_DIM, height: MAX_DRAG_ICON_DIM, quality: 'best' });
       }
+    }
+
+    if (!dragIcon || dragIcon.isEmpty()) {
+      console.error('Failed to create drag icon');
+      event.sender.send('drag-error', 'Failed to start drag operation');
+      return;
     }
 
     // Start the native drag operation
