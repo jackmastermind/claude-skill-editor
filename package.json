@@ -1,6 +1,6 @@
 {
   "name": "claude-skill-editor",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "Desktop editor for Claude Desktop Skills",
   "homepage": "https://github.com/jackmastermind/claude-skill-editor",
   "main": "main.js",
@@ -40,6 +40,12 @@
     "executableName": "claude-skill-editor",
     "afterPack": "build/afterPack.js",
     "publish": null,
+    "extraResources": [
+      {
+        "from": "build/icons/64x64.png",
+        "to": "drag-icon.png"
+      }
+    ],
     "mac": {
       "icon": "icons/claude-skill-editor.icns",
       "target": [

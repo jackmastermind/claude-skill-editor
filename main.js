@@ -469,6 +469,7 @@ ipcMain.on('start-drag', (event, zipPath, skillName) => {
 
     // Resolve an icon for the drag payload
     const candidateIconPaths = [
+      path.join(process.resourcesPath, 'drag-icon.png'), // Packaged builds (extraResources)
       path.join(app.getAppPath(), 'icon.png'),
       path.join(app.getAppPath(), 'build', 'icons', '64x64.png'),
       path.join(__dirname, 'icon.png'),
